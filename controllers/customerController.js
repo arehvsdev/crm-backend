@@ -174,7 +174,7 @@ const updateCustomer = async (req, res) => {
                 createdBy: req.user.id,
             },
             req.body, {
-                new: true,
+                returnDocument: 'after',
                 runValidators: true,
             }
         );
