@@ -10,12 +10,14 @@ const customerSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, "Customer email is required"],
+        match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address'],
         trim: true,
     },
 
     phone: {
         type: String,
         required: [true, "Phone number is required"],
+        match: [/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/, 'Please use a valid phone number'],
     },
 
     company: {
@@ -30,7 +32,7 @@ const customerSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ["Active", "Inactive"],
+        enum: ["Active", "Inactive", "Lead"],
         default: "Active",
     },
 

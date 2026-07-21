@@ -8,14 +8,37 @@ const jwt = require("jsonwebtoken");
 const register = async (req, res) => {
     console.log("Registering new user");
     try {
-        const {name, email, password } = req.body;
+        const {name, email, password, role } = req.body;
 
         // Validation
-        if( !name || !email || !password){
+        if( !name || !email || !password || name.trim() === "" || email.trim() === "" || password.trim() === ""){
             return res.status(400).json({
-                 message: "All fields are required",
+                 message: "All fields are required and cannot be empty",
                  status: false
             })
+        }
+
+        // Email validation
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({
+                message: "Please enter a valid email address",
+                status: false
+            });
+        }
+
+        // Password complexity check
+        if (password.length < 6) {
+            return res.status(400).json({
+                message: "Password must be at least 6 characters long",
+                status: false
+            });
+        }
+
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
+            return res.status(400).json({
+                message: "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character",
+                status: false
+            });
         }
 
         // Check if user already exist
@@ -36,6 +59,7 @@ const register = async (req, res) => {
             name,
             email,
             password: hashedPassword,
+            role: role || "User"
         })
 
         if (user) {
@@ -44,7 +68,8 @@ const register = async (req, res) => {
                 user: {
                     id: user._id,
                     name: user.name,
-                    email: user.email
+                    email: user.email,
+                    role: user.role
                 }
             })
         }
@@ -66,6 +91,13 @@ const login = async(req, res) => {
     try {
         const {email, password} = req.body;
 
+        if (!email || !password || email.trim() === "" || password.trim() === "") {
+            return res.status(400).json({
+                message: "Email and password are required",
+                status: false
+            });
+        }
+
         const user = await User.findOne({email});
         if( !user){
             return res.status(404).json({
@@ -85,7 +117,8 @@ const login = async(req, res) => {
         const token = jwt.sign({
             id: user._id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            role: user.role
         }, process.env.JWT_SECRET_KEY, {
             expiresIn: "1d"
         });
@@ -97,7 +130,8 @@ const login = async(req, res) => {
             user: {
                 id: user._id,
                 email: user.email,
-                name: user.name
+                name: user.name,
+                role: user.role
             }
         })
 
